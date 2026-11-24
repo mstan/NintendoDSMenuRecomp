@@ -1,5 +1,7 @@
 # Nintendo DS Menu Recomp
 
-A standalone project for the original Nintendo DS firmware menu, using [ndsrecomp](https://github.com/RetroPortingToolKit/ndsrecomp). The native player build is in development.
+Run the original Nintendo DS firmware menu. Powered by [ndsrecomp](https://github.com/RetroPortingToolKit/ndsrecomp).
 
-[Setup and build status](SETUP.md)
+![Original Nintendo DS firmware menu](docs/menu.png)
+
+[Downloads](https://github.com/mstan/NintendoDSMenuRecomp/releases) · [Setup and build](SETUP.md)

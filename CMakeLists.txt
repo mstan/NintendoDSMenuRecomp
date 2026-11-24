@@ -1,0 +1,12 @@
+cmake_minimum_required(VERSION 3.20)
+project(NintendoDSMenuRecomp LANGUAGES C CXX)
+
+find_package(SDL3 CONFIG REQUIRED)
+add_executable(NintendoDSMenu WIN32 src/menu_launcher.cpp)
+target_compile_features(NintendoDSMenu PRIVATE cxx_std_17)
+target_link_libraries(NintendoDSMenu PRIVATE SDL3::SDL3-static shell32)
+target_link_options(NintendoDSMenu PRIVATE $<$<CXX_COMPILER_ID:GNU>:-municode;-static>)
+set(RECOMP_UI_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/recomp-ui")
+set(RECOMP_UI_SDL3 ON CACHE BOOL "" FORCE)
+include("${RECOMP_UI_ROOT}/recomp_ui.cmake")
+recomp_target_launcher_ui(NintendoDSMenu CONSOLE nds)
