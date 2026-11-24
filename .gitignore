@@ -1,0 +1,11 @@
+/local/
+/build/
+/dist/
+__pycache__/
+*.rom
+*.nds
+*.bin
+*.sav
+*.exe
+*.dll
+*.zip
