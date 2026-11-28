@@ -2,21 +2,20 @@
 """Package the Windows x64 Nintendo DS firmware player."""
 
 import argparse
-import hashlib
 import json
 from pathlib import Path
 import re
 import subprocess
-import zipfile
 
+
+import os
+import sys
+sys.path.insert(0, str(Path(os.environ.get("NDSRECOMP_ROOT", Path(__file__).resolve().parents[1] / "ndsrecomp")) / "tools"))
+from nds_tools.release import sha256, write_archive, check_pe_dependencies, runtime_dll_files
 
 ROOT = Path(__file__).resolve().parents[1]
 DLLS = ("SDL3.dll", "libgcc_s_seh-1.dll", "libstdc++-6.dll", "libwinpthread-1.dll")
 
-
-def sha256(path):
-    with path.open("rb") as source:
-        return hashlib.file_digest(source, "sha256").hexdigest()
 
 
 def revision(path):
@@ -56,8 +55,8 @@ def main():
         "licenses/winpthread-COPYING": args.toolchain_bin.parent / "share/licenses/libwinpthread/COPYING",
         "licenses/libiconv-COPYING.LIB": args.toolchain_bin.parent / "share/licenses/libiconv/COPYING.LIB",
     }
-    for filename in (*DLLS, "libiconv-2.dll"):
-        files["runtime/" + filename] = args.toolchain_bin / filename
+    for filename, source in runtime_dll_files(args.toolchain_bin, ("SDL3",)).items():
+        files["runtime/" + filename] = source
     assets = args.launcher / "assets"
     for path in sorted(assets.rglob("*")):
         if path.is_file():
@@ -65,14 +64,8 @@ def main():
     metadata = dict(version="0.1.0", boot="firmware", source=revision(ROOT),
                     ndsrecomp=revision(engine), recomp_ui=revision(ROOT / "recomp-ui"),
                     files={name: sha256(path) for name, path in files.items()})
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    with zipfile.ZipFile(args.out, "x", zipfile.ZIP_DEFLATED, compresslevel=3) as archive:
-        for name, path in files.items():
-            archive.write(path, name)
-        archive.writestr("build.json", json.dumps(metadata, indent=2) + "\n")
-    with zipfile.ZipFile(args.out) as archive:
-        if archive.testzip() is not None:
-            raise ValueError("Package integrity check failed")
+    check_pe_dependencies(files, args.toolchain_bin / "objdump.exe")
+    write_archive(args.out, files, {"build.json": json.dumps(metadata, indent=2) + "\n"})
     print(f"{sha256(args.out)}  {args.out}")
 
 
